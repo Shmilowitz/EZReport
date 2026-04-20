@@ -1,0 +1,7 @@
+# Core — required
+jinja2>=3.1.6
+python-docx>=1.2.0
+
+# Optional: PDF output
+# pip install weasyprint
+# Then pass --format pdf to ezreport.py

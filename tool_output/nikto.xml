@@ -1,0 +1,66 @@
+<?xml version="1.0" ?>
+<!DOCTYPE niktoscan SYSTEM "docs/nikto.dtd">
+<niktoscan>
+  <niktoscan hoststested="1" sitestested="1" scanstart="Sat Apr 19 10:25:00 2025" scanend="Sat Apr 19 10:26:42 2025" scanelapsed=" 102 seconds" niktover="2.1.6">
+
+    <scandetails targetip="192.168.1.10" targethostname="web01.example-corp.local" targetport="80" targetbanner="Apache/2.4.49 (Ubuntu)" starttime="2025-04-19 10:25:00" sitename="http://web01.example-corp.local:80/" siteip="http://192.168.1.10:80/" hostheader="192.168.1.10" errors="0" checks="6963">
+
+      <item id="999970" osvdbid="0" osvdblink="" method="GET">
+        <description><![CDATA[Retrieved x-powered-by header: PHP/7.4.3]]></description>
+        <uri>/</uri>
+        <namelink>http://web01.example-corp.local/</namelink>
+        <iplink>http://192.168.1.10/</iplink>
+      </item>
+
+      <item id="999986" osvdbid="0" osvdblink="" method="GET">
+        <description><![CDATA[The anti-clickjacking X-Frame-Options header is not present.]]></description>
+        <uri>/</uri>
+        <namelink>http://web01.example-corp.local/</namelink>
+        <iplink>http://192.168.1.10/</iplink>
+      </item>
+
+      <item id="999987" osvdbid="0" osvdblink="" method="GET">
+        <description><![CDATA[The X-Content-Type-Options header is not set. This could allow the browser to render the content differently.]]></description>
+        <uri>/</uri>
+        <namelink>http://web01.example-corp.local/</namelink>
+        <iplink>http://192.168.1.10/</iplink>
+      </item>
+
+      <item id="000398" osvdbid="12184" osvdblink="https://osvdb.org/12184" method="GET">
+        <description><![CDATA[/phpinfo.php: PHP information file detected. This file leaks server configuration, PHP version, loaded extensions, and environment variables.]]></description>
+        <uri>/phpinfo.php</uri>
+        <namelink>http://web01.example-corp.local/phpinfo.php</namelink>
+        <iplink>http://192.168.1.10/phpinfo.php</iplink>
+      </item>
+
+      <item id="000500" osvdbid="0" osvdblink="" method="GET">
+        <description><![CDATA[/.git/HEAD: Git repository HEAD file is exposed. An attacker can reconstruct the full source code using tools such as git-dumper.]]></description>
+        <uri>/.git/HEAD</uri>
+        <namelink>http://web01.example-corp.local/.git/HEAD</namelink>
+        <iplink>http://192.168.1.10/.git/HEAD</iplink>
+      </item>
+
+      <item id="000786" osvdbid="3233" osvdblink="https://osvdb.org/3233" method="GET">
+        <description><![CDATA[/backup.zip: Backup archive is publicly accessible. May contain source code, configuration files, or credentials.]]></description>
+        <uri>/backup.zip</uri>
+        <namelink>http://web01.example-corp.local/backup.zip</namelink>
+        <iplink>http://192.168.1.10/backup.zip</iplink>
+      </item>
+
+      <item id="001031" osvdbid="0" osvdblink="" method="GET">
+        <description><![CDATA[/server-status: Apache server-status page is publicly accessible. Discloses active requests, client IPs, and server load.]]></description>
+        <uri>/server-status</uri>
+        <namelink>http://web01.example-corp.local/server-status</namelink>
+        <iplink>http://192.168.1.10/server-status</iplink>
+      </item>
+
+      <item id="001032" osvdbid="0" osvdblink="" method="GET">
+        <description><![CDATA[OSVDB-877: HTTP TRACE method is active, which could allow XST (Cross-Site Tracing) attacks.]]></description>
+        <uri>/</uri>
+        <namelink>http://web01.example-corp.local/</namelink>
+        <iplink>http://192.168.1.10/</iplink>
+      </item>
+
+    </scandetails>
+  </niktoscan>
+</niktoscan>

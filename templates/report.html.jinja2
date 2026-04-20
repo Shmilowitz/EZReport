@@ -1,0 +1,244 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>{{ metadata.title | default('Penetration Test Report') }}</title>
+<style>
+  :root {
+    --critical: #dc3545;
+    --high:     #fd7e14;
+    --medium:   #e0a800;
+    --low:      #0d6efd;
+    --info:     #6c757d;
+    --dark:     #1e2a3a;
+    --light:    #f8f9fa;
+    --border:   #dee2e6;
+    --mono:     'Courier New', Courier, monospace;
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+    font-size: 14px;
+    line-height: 1.6;
+    color: #212529;
+    background: #fff;
+  }
+
+  /* ── Header ── */
+  .report-header {
+    background: var(--dark);
+    color: #fff;
+    padding: 40px 50px;
+  }
+  .report-header h1 { font-size: 28px; font-weight: 700; margin-bottom: 12px; }
+  .report-meta { display: flex; gap: 30px; font-size: 13px; opacity: 0.8; flex-wrap: wrap; }
+  .report-meta span { display: flex; gap: 6px; }
+  .report-meta strong { opacity: 1; color: #fff; }
+
+  /* ── Main content ── */
+  .container { max-width: 1000px; margin: 0 auto; padding: 40px 50px; }
+
+  h2 { font-size: 20px; font-weight: 600; margin: 36px 0 16px; color: var(--dark); border-bottom: 2px solid var(--border); padding-bottom: 6px; }
+  h3 { font-size: 15px; font-weight: 600; margin-bottom: 12px; }
+  h4 { font-size: 13px; font-weight: 600; margin: 14px 0 6px; text-transform: uppercase; letter-spacing: 0.05em; color: #495057; }
+
+  /* ── Executive summary ── */
+  .summary-grid { display: flex; gap: 12px; flex-wrap: wrap; margin-bottom: 24px; }
+  .summary-box {
+    flex: 1 1 120px;
+    border-radius: 6px;
+    padding: 16px 20px;
+    color: #fff;
+    text-align: center;
+  }
+  .summary-box .count { font-size: 32px; font-weight: 700; line-height: 1; }
+  .summary-box .label { font-size: 12px; text-transform: uppercase; letter-spacing: 0.08em; margin-top: 4px; opacity: 0.9; }
+  .bg-critical { background: var(--critical); }
+  .bg-high     { background: var(--high); }
+  .bg-medium   { background: var(--medium); }
+  .bg-low      { background: var(--low); }
+  .bg-info     { background: var(--info); }
+
+  /* ── Severity badge ── */
+  .badge {
+    display: inline-block;
+    padding: 2px 9px;
+    border-radius: 3px;
+    font-size: 11px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    color: #fff;
+    vertical-align: middle;
+  }
+  .badge-critical { background: var(--critical); }
+  .badge-high     { background: var(--high); }
+  .badge-medium   { background: var(--medium); }
+  .badge-low      { background: var(--low); }
+  .badge-info     { background: var(--info); }
+
+  /* ── Finding card ── */
+  .finding-card {
+    border: 1px solid var(--border);
+    border-left: 5px solid #ccc;
+    border-radius: 4px;
+    margin-bottom: 24px;
+    overflow: hidden;
+  }
+  .finding-card.sev-critical { border-left-color: var(--critical); }
+  .finding-card.sev-high     { border-left-color: var(--high); }
+  .finding-card.sev-medium   { border-left-color: var(--medium); }
+  .finding-card.sev-low      { border-left-color: var(--low); }
+  .finding-card.sev-info     { border-left-color: var(--info); }
+
+  .card-header {
+    padding: 14px 20px;
+    background: var(--light);
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    border-bottom: 1px solid var(--border);
+  }
+  .card-header h3 { margin: 0; flex: 1; }
+  .card-body { padding: 16px 20px; }
+
+  /* ── Metadata table ── */
+  .meta-table { border-collapse: collapse; font-size: 13px; margin-bottom: 14px; }
+  .meta-table td { padding: 4px 16px 4px 0; vertical-align: top; }
+  .meta-table td:first-child { font-weight: 600; color: #495057; white-space: nowrap; min-width: 90px; }
+
+  /* ── Evidence ── */
+  pre.evidence {
+    background: #1e2a3a;
+    color: #a8d8a8;
+    font-family: var(--mono);
+    font-size: 12px;
+    line-height: 1.5;
+    padding: 14px 16px;
+    border-radius: 4px;
+    overflow-x: auto;
+    white-space: pre-wrap;
+    word-break: break-all;
+    max-height: 400px;
+    overflow-y: auto;
+  }
+
+  /* ── Remediation ── */
+  .remediation {
+    background: #f0f7f0;
+    border-left: 3px solid #28a745;
+    padding: 10px 14px;
+    border-radius: 0 4px 4px 0;
+    font-size: 13px;
+  }
+
+  /* ── References ── */
+  .references { font-size: 12px; }
+  .references a { color: #0d6efd; text-decoration: none; word-break: break-all; }
+  .references a:hover { text-decoration: underline; }
+  .references li { margin-bottom: 3px; }
+
+  /* ── Footer ── */
+  .report-footer {
+    background: var(--light);
+    border-top: 1px solid var(--border);
+    text-align: center;
+    padding: 16px;
+    font-size: 12px;
+    color: #6c757d;
+    margin-top: 60px;
+  }
+
+  @media print {
+    .report-header { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+    .summary-box   { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+    .badge         { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+  }
+</style>
+</head>
+<body>
+
+<header class="report-header">
+  <h1>{{ metadata.title | default('Penetration Test Report') }}</h1>
+  <div class="report-meta">
+    <span><strong>Date:</strong> {{ metadata.date | default('N/A') }}</span>
+    <span><strong>Author:</strong> {{ metadata.author | default('N/A') }}</span>
+    {% if metadata.scope %}<span><strong>Scope:</strong> {{ metadata.scope }}</span>{% endif %}
+    <span><strong>Total Findings:</strong> {{ total }}</span>
+  </div>
+</header>
+
+<div class="container">
+
+  <!-- Executive Summary -->
+  <h2>Executive Summary</h2>
+  <div class="summary-grid">
+    {% for sev in severity_order %}
+    <div class="summary-box bg-{{ sev }}">
+      <div class="count">{{ severity_counts[sev] }}</div>
+      <div class="label">{{ sev }}</div>
+    </div>
+    {% endfor %}
+  </div>
+  {% if metadata.scope %}
+  <p>{{ metadata.scope }}</p>
+  {% endif %}
+
+  <!-- Findings by severity -->
+  {% for sev in severity_order %}
+  {% set group = findings | selectattr('severity', 'equalto', sev) | list %}
+  {% if group %}
+  <h2>{{ sev | capitalize }} Findings</h2>
+
+  {% for f in group %}
+  <div class="finding-card sev-{{ f.severity }}">
+    <div class="card-header">
+      <span class="badge badge-{{ f.severity }}">{{ f.severity }}</span>
+      <h3>{{ f.title }}</h3>
+      {% if f.cvss_score is not none %}<small>CVSS {{ f.cvss_score }}</small>{% endif %}
+    </div>
+    <div class="card-body">
+
+      <table class="meta-table">
+        <tr><td>Asset</td><td><code>{{ f.affected_asset }}</code></td></tr>
+        {% if f.cwe %}<tr><td>CWE</td><td>{{ f.cwe }}</td></tr>{% endif %}
+        {% if f.cvss_vector %}<tr><td>Vector</td><td><code>{{ f.cvss_vector }}</code></td></tr>{% endif %}
+        <tr><td>Source</td><td>{{ f.tool_source }}</td></tr>
+      </table>
+
+      {% if f.evidence %}
+      <h4>Evidence</h4>
+      <pre class="evidence">{{ f.evidence }}</pre>
+      {% endif %}
+
+      {% if f.remediation %}
+      <h4>Remediation</h4>
+      <div class="remediation">{{ f.remediation }}</div>
+      {% endif %}
+
+      {% if f.references %}
+      <h4>References</h4>
+      <ul class="references">
+        {% for ref in f.references %}
+        <li><a href="{{ ref }}" target="_blank" rel="noopener">{{ ref }}</a></li>
+        {% endfor %}
+      </ul>
+      {% endif %}
+
+    </div>
+  </div>
+  {% endfor %}
+  {% endif %}
+  {% endfor %}
+
+</div>
+
+<footer class="report-footer">
+  Generated by EZReport &nbsp;·&nbsp; {{ metadata.date | default('') }}
+</footer>
+
+</body>
+</html>

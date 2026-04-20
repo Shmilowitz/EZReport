@@ -1,0 +1,109 @@
+{
+  "commandline": "ffuf -w /usr/share/wordlists/dirb/common.txt -u http://192.168.1.10/FUZZ -of json -o ffuf.json -mc 200,301,302,403 -t 50",
+  "time": "2025-04-19T10:30:00Z",
+  "config": {
+    "autocalibration": false,
+    "maxtime": 0,
+    "threads": 50,
+    "url": "http://192.168.1.10/FUZZ",
+    "wordlist": ["/usr/share/wordlists/dirb/common.txt"]
+  },
+  "results": [
+    {
+      "input": {"FUZZ": "admin"},
+      "position": 45,
+      "status": 200,
+      "length": 4823,
+      "words": 312,
+      "lines": 98,
+      "content-type": "text/html; charset=utf-8",
+      "redirectlocation": "",
+      "duration": 12450000,
+      "url": "http://192.168.1.10/admin"
+    },
+    {
+      "input": {"FUZZ": "backup"},
+      "position": 112,
+      "status": 200,
+      "length": 1048576,
+      "words": 0,
+      "lines": 0,
+      "content-type": "application/zip",
+      "redirectlocation": "",
+      "duration": 88000000,
+      "url": "http://192.168.1.10/backup"
+    },
+    {
+      "input": {"FUZZ": "api/v1/users"},
+      "position": 234,
+      "status": 200,
+      "length": 893,
+      "words": 45,
+      "lines": 12,
+      "content-type": "application/json",
+      "redirectlocation": "",
+      "duration": 9800000,
+      "url": "http://192.168.1.10/api/v1/users"
+    },
+    {
+      "input": {"FUZZ": "api/v1/admin/config"},
+      "position": 235,
+      "status": 200,
+      "length": 2341,
+      "words": 88,
+      "lines": 34,
+      "content-type": "application/json",
+      "redirectlocation": "",
+      "duration": 11200000,
+      "url": "http://192.168.1.10/api/v1/admin/config"
+    },
+    {
+      "input": {"FUZZ": ".git"},
+      "position": 401,
+      "status": 200,
+      "length": 23,
+      "words": 2,
+      "lines": 1,
+      "content-type": "text/plain",
+      "redirectlocation": "",
+      "duration": 6700000,
+      "url": "http://192.168.1.10/.git"
+    },
+    {
+      "input": {"FUZZ": "phpmyadmin"},
+      "position": 512,
+      "status": 200,
+      "length": 8912,
+      "words": 432,
+      "lines": 210,
+      "content-type": "text/html; charset=utf-8",
+      "redirectlocation": "",
+      "duration": 14100000,
+      "url": "http://192.168.1.10/phpmyadmin"
+    },
+    {
+      "input": {"FUZZ": "uploads"},
+      "position": 678,
+      "status": 200,
+      "length": 1247,
+      "words": 54,
+      "lines": 23,
+      "content-type": "text/html; charset=utf-8",
+      "redirectlocation": "",
+      "duration": 7300000,
+      "url": "http://192.168.1.10/uploads"
+    },
+    {
+      "input": {"FUZZ": "robots.txt"},
+      "position": 751,
+      "status": 200,
+      "length": 128,
+      "words": 8,
+      "lines": 6,
+      "content-type": "text/plain",
+      "redirectlocation": "",
+      "duration": 5400000,
+      "url": "http://192.168.1.10/robots.txt"
+    }
+  ]
+}

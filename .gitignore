@@ -1,0 +1,29 @@
+# Python
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+.Python
+*.egg-info/
+.venv/
+venv/
+env/
+
+# Generated report output — do not commit client deliverables
+report.html
+report.md
+report.docx
+report.pdf
+normalized_findings.json
+
+# Keep example_* files so the portfolio demo is visible on GitHub
+# example_report.html, example_report.md are intentionally tracked
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Editor
+.vscode/
+.idea/
+*.swp

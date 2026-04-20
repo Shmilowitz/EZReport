@@ -1,0 +1,121 @@
+{
+  "Invocation": "testssl.sh --jsonfile testssl.json https://192.168.1.10",
+  "at": "2025-04-19 10:20:00 UTC",
+  "version": "3.2",
+  "openssl_version": "1.0.2k  22 Jan 2019",
+  "scanResult": [
+    {
+      "ip": "192.168.1.10",
+      "port": "443",
+      "hostname": "web01.example-corp.local",
+      "findings": [
+        {
+          "id": "SSLv2",
+          "ip": "192.168.1.10",
+          "port": "443",
+          "severity": "CRITICAL",
+          "finding": "offered"
+        },
+        {
+          "id": "SSLv3",
+          "ip": "192.168.1.10",
+          "port": "443",
+          "severity": "HIGH",
+          "finding": "offered"
+        },
+        {
+          "id": "TLS1",
+          "ip": "192.168.1.10",
+          "port": "443",
+          "severity": "MEDIUM",
+          "finding": "offered with final"
+        },
+        {
+          "id": "TLS1_1",
+          "ip": "192.168.1.10",
+          "port": "443",
+          "severity": "LOW",
+          "finding": "offered with final"
+        },
+        {
+          "id": "TLS1_2",
+          "ip": "192.168.1.10",
+          "port": "443",
+          "severity": "OK",
+          "finding": "offered (OK)"
+        },
+        {
+          "id": "TLS1_3",
+          "ip": "192.168.1.10",
+          "port": "443",
+          "severity": "OK",
+          "finding": "offered (OK)"
+        },
+        {
+          "id": "heartbleed",
+          "ip": "192.168.1.10",
+          "port": "443",
+          "severity": "CRITICAL",
+          "finding": "VULNERABLE, server process has not been restarted!",
+          "cve": "CVE-2014-0160",
+          "cwe": "CWE-119"
+        },
+        {
+          "id": "CCS",
+          "ip": "192.168.1.10",
+          "port": "443",
+          "severity": "HIGH",
+          "finding": "VULNERABLE (NOT ok)",
+          "cve": "CVE-2014-0224",
+          "cwe": "CWE-310"
+        },
+        {
+          "id": "SWEET32",
+          "ip": "192.168.1.10",
+          "port": "443",
+          "severity": "MEDIUM",
+          "finding": "VULNERABLE, uses 64 bit block ciphers",
+          "cve": "CVE-2016-2183",
+          "cwe": "CWE-326"
+        },
+        {
+          "id": "LOGJAM-common",
+          "ip": "192.168.1.10",
+          "port": "443",
+          "severity": "HIGH",
+          "finding": "VULNERABLE (NOT ok): common prime",
+          "cve": "CVE-2015-4000",
+          "cwe": "CWE-310"
+        },
+        {
+          "id": "cert_expiry",
+          "ip": "192.168.1.10",
+          "port": "443",
+          "severity": "HIGH",
+          "finding": "Certificate expires in 256 days (2025-01-01)"
+        },
+        {
+          "id": "cert_chain_of_trust",
+          "ip": "192.168.1.10",
+          "port": "443",
+          "severity": "WARN",
+          "finding": "self-signed certificate — not trusted by common clients"
+        },
+        {
+          "id": "HSTS",
+          "ip": "192.168.1.10",
+          "port": "443",
+          "severity": "WARN",
+          "finding": "not offered"
+        },
+        {
+          "id": "cipher_order",
+          "ip": "192.168.1.10",
+          "port": "443",
+          "severity": "LOW",
+          "finding": "Server does not enforce cipher order"
+        }
+      ]
+    }
+  ]
+}

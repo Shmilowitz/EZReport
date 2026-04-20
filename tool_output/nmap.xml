@@ -1,0 +1,97 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE nmaprun>
+<nmaprun scanner="nmap" args="nmap -sV -sC --script vuln -oX nmap.xml 192.168.1.0/24" start="1745000000" version="7.94" xmloutputversion="1.05">
+  <scaninfo type="syn" protocol="tcp" numservices="1000" services="1-1000"/>
+
+  <!-- ── Web server ── -->
+  <host starttime="1745000010" endtime="1745000090">
+    <status state="up" reason="echo-reply"/>
+    <address addr="192.168.1.10" addrtype="ipv4"/>
+    <hostnames>
+      <hostname name="web01.example-corp.local" type="user"/>
+    </hostnames>
+    <ports>
+      <port protocol="tcp" portid="22">
+        <state state="open" reason="syn-ack"/>
+        <service name="ssh" product="OpenSSH" version="7.4" extrainfo="protocol 2.0"/>
+        <script id="ssh-hostkey" output="2048 SHA256:abc123 (RSA)&#xa;256 SHA256:def456 (ECDSA)"/>
+      </port>
+      <port protocol="tcp" portid="80">
+        <state state="open" reason="syn-ack"/>
+        <service name="http" product="Apache httpd" version="2.4.49" extrainfo="(Ubuntu)"/>
+        <script id="http-methods" output="Supported Methods: GET POST OPTIONS HEAD"/>
+        <script id="http-vuln-cve2021-41773" output="VULNERABLE:&#xa;  Apache HTTP Server 2.4.49 Path Traversal and RCE&#xa;  State: VULNERABLE&#xa;  IDs: CVE:CVE-2021-41773&#xa;  Description: A flaw was found in Apache HTTP Server 2.4.49. Path traversal and remote code execution is possible if mod_cgi is enabled.&#xa;  Disclosure date: 2021-10-04&#xa;  References: https://nvd.nist.gov/vuln/detail/CVE-2021-41773"/>
+      </port>
+      <port protocol="tcp" portid="443">
+        <state state="open" reason="syn-ack"/>
+        <service name="https" product="Apache httpd" version="2.4.49" extrainfo="(Ubuntu)"/>
+        <script id="ssl-cert" output="Subject: commonName=web01.example-corp.local&#xa;Issuer: commonName=Example-Corp-CA&#xa;Public Key type: rsa&#xa;Public Key bits: 2048&#xa;Not valid before: 2024-01-01&#xa;Not valid after: 2025-01-01"/>
+        <script id="ssl-heartbleed" output="VULNERABLE:&#xa;  The Heartbleed Bug is a serious vulnerability in the OpenSSL cryptographic software library.&#xa;  State: VULNERABLE&#xa;  IDs: CVE:CVE-2014-0160&#xa;  Risk factor: High&#xa;  Description: OpenSSL versions 1.0.1 and 1.0.2-beta releases (including 1.0.1f and 1.0.2-beta1) of OpenSSL are affected by the Heartbleed bug.&#xa;  References: https://cve.mitre.org/cgi-bin/cvename.cgi?name=CVE-2014-0160"/>
+      </port>
+      <port protocol="tcp" portid="8080">
+        <state state="open" reason="syn-ack"/>
+        <service name="http" product="Apache Tomcat" version="9.0.1"/>
+      </port>
+    </ports>
+    <os><osmatch name="Linux 4.15 - 5.6" accuracy="96"/></os>
+  </host>
+
+  <!-- ── Windows / SMB server ── -->
+  <host starttime="1745000091" endtime="1745000160">
+    <status state="up" reason="echo-reply"/>
+    <address addr="192.168.1.20" addrtype="ipv4"/>
+    <hostnames>
+      <hostname name="dc01.example-corp.local" type="user"/>
+    </hostnames>
+    <ports>
+      <port protocol="tcp" portid="445">
+        <state state="open" reason="syn-ack"/>
+        <service name="microsoft-ds" product="Windows Server 2016" extrainfo="Microsoft Windows Server 2016 microsoft-ds"/>
+        <script id="smb-vuln-ms17-010" output="VULNERABLE:&#xa;  Remote Code Execution vulnerability in Microsoft SMBv1 servers (ms17-010)&#xa;  State: VULNERABLE&#xa;  IDs: CVE:CVE-2017-0144  OSVDB:148427&#xa;  Risk factor: HIGH&#xa;  Description: A critical remote code execution vulnerability exists in Microsoft SMBv1 in multiple versions of Microsoft Windows and Windows Server. This was exploited in the WannaCry ransomware campaign.&#xa;  Disclosure date: 2017-03-14&#xa;  References: https://nvd.nist.gov/vuln/detail/CVE-2017-0144&#xa;    https://technet.microsoft.com/en-us/library/security/ms17-010.aspx"/>
+      </port>
+      <port protocol="tcp" portid="3389">
+        <state state="open" reason="syn-ack"/>
+        <service name="ms-wbt-server" product="Microsoft Terminal Services"/>
+      </port>
+      <port protocol="tcp" portid="135">
+        <state state="open" reason="syn-ack"/>
+        <service name="msrpc" product="Microsoft Windows RPC"/>
+      </port>
+      <port protocol="tcp" portid="139">
+        <state state="open" reason="syn-ack"/>
+        <service name="netbios-ssn" product="Microsoft Windows netbios-ssn"/>
+      </port>
+    </ports>
+    <os><osmatch name="Windows Server 2016" accuracy="99"/></os>
+  </host>
+
+  <!-- ── Linux / FTP server ── -->
+  <host starttime="1745000161" endtime="1745000220">
+    <status state="up" reason="echo-reply"/>
+    <address addr="192.168.1.30" addrtype="ipv4"/>
+    <hostnames>
+      <hostname name="ftp01.example-corp.local" type="user"/>
+    </hostnames>
+    <ports>
+      <port protocol="tcp" portid="21">
+        <state state="open" reason="syn-ack"/>
+        <service name="ftp" product="vsftpd" version="3.0.3"/>
+        <script id="ftp-anon" output="Anonymous FTP login allowed (FTP code 230)&#xa;drwxr-xr-x    2 0        0            4096 Jan 10 09:00 pub&#xa;drwxr-xr-x    3 0        0            4096 Jan 10 09:00 uploads&#xa;-rw-r--r--    1 0        0              42 Jan 10 09:00 README.txt"/>
+      </port>
+      <port protocol="tcp" portid="22">
+        <state state="open" reason="syn-ack"/>
+        <service name="ssh" product="OpenSSH" version="8.2p1"/>
+      </port>
+      <port protocol="tcp" portid="3306">
+        <state state="open" reason="syn-ack"/>
+        <service name="mysql" product="MySQL" version="5.7.39"/>
+      </port>
+    </ports>
+    <os><osmatch name="Linux 5.4" accuracy="95"/></os>
+  </host>
+
+  <runstats>
+    <finished time="1745000300" timestr="Sat Apr 19 10:05:00 2025" elapsed="300"/>
+    <hosts up="3" down="253" total="256"/>
+  </runstats>
+</nmaprun>
