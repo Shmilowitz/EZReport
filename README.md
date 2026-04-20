@@ -110,5 +110,5 @@ The generated `example_report.html` is committed to the repo so you can preview 
 ---
 
 ## Similar tools
-
-[Ghostwriter](https://github.com/GhostManager/Ghostwriter) and [Dradis](https://dradisframework.com/) are collaborative platforms built around a persistent project database. EZReport is intentionally the opposite: a zero-infrastructure CLI that takes raw tool output and produces a deliverable in a single command, with no account, no server, and no import workflow.
+EZReport is a wrapper I built to standardize how I write up pentests and CTF findings. I got tired of copying the same boilerplate across writeups and wanted a tool that would enforce a consistent structure while staying out of my way.
+It's designed for my own workflow. If it fits yours, great. If you need something with collaborative editing, client management, or a full reporting engine, look at [Ghostwriter](https://github.com/GhostManager/Ghostwriter) or [Dradis](https://dradisframework.com/).
